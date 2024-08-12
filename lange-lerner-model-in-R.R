@@ -13,6 +13,8 @@ objective_function <- function(prices) {
   welfare <- sum(prices * colSums(initial_goods))
   return(-welfare)  # Maximizing welfare, so negative sign
 }
+# Turn off Scientific Notation
+options(scipen = 999) 
 
 # Constraints: Production and resource constraints
 constraint_function <- function(x) {
@@ -28,19 +30,22 @@ constraint_function <- function(x) {
 }
 
 # Step 4: Solve the optimization problem
-initial_guess <- c(initial_goods, initial_resources)
+initial_guess <- c(as.vector(initial_goods), initial_resources)
 result <- optim(initial_guess, objective_function, 
-                NULL, method = "Nelder-Mead", 
-                constraints = list(ineqfun = constraint_function),
-                control = list(fnscale = -1))  # Maximize objective function
+                method = "Nelder-Mead", 
+                control = list(fnscale = -1),  # Maximize objective function
+                hessian = TRUE)
 
 # Step 5: Update prices and allocations
 final_goods <- matrix(result$par[1:(num_firms * num_goods)], ncol = num_goods)
 final_resources <- result$par[(num_firms * num_goods + 1):(num_firms * num_goods + num_goods)]
-prices <- result$value / colSums(final_goods)
+
+# Assuming prices should be derived from allocations
+prices <- colSums(final_goods) / sum(final_resources)
 
 # Step 6: Repeat steps 4 and 5 (optional)
 
 # Step 7: Analyze results
 cat("Final prices:", prices, "\n")
-cat("Final goods allocation:\n", final_goods)
+cat("Final goods allocation:\n", final_goods, "\n")
+cat("Final resources:\n", final_resources, "\n
